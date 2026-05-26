@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Eid Al-Adha Festival Effect</title>
+<style>
+  * { box-sizing: border-box; }
+
+  html, body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+    background: radial-gradient(circle at top, #12071d 0%, #050308 46%, #000 100%);
+  }
+
+  body {
+    position: relative;
+    font-family: Arial, sans-serif;
+  }
+
+  canvas {
+    position: absolute;
+    inset: 0;
+  }
+
+  .imageScene {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    perspective: 1500px;
+    pointer-events: none;
+  }
+
+  .imageWrap {
+    position: relative;
+    width: min(84vw, 980px);
+    transform-style: preserve-3d;
+    will-change: transform, filter;
+    opacity: 0;
+    filter: blur(18px);
+    animation:
+      revealImage 1.8s ease forwards 1.2s,
+      float3D 5.5s ease-in-out infinite 3s;
+  }
+
+  .imageWrap::before {
+    content: "";
+    position: absolute;
+    inset: 4% 10%;
+    background: radial-gradient(circle, rgba(255, 210, 60, 0.20) 0%, rgba(255, 210, 60, 0.07) 38%, transparent 70%);
+    transform: translateZ(-60px) scale(1.06);
+    filter: blur(18px);
+    z-index: -1;
+  }
+
+  .imageWrap::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(115deg, transparent 0%, rgba(255,255,255,0.08) 32%, rgba(255,255,255,0.2) 43%, transparent 58%);
+    mix-blend-mode: screen;
+    opacity: 0.8;
+    transform: translateZ(30px);
+    animation: shine 4.2s ease-in-out infinite 3.2s;
+    pointer-events: none;
+  }
+
+  .festivalImage {
+    display: block;
+    width: 100%;
+    height: auto;
+    transform: translateZ(45px);
+    filter: drop-shadow(0 22px 42px rgba(0, 0, 0, 0.40)) drop-shadow(0 0 18px rgba(255, 198, 58, 0.16));
+    user-select: none;
+    -webkit-user-drag: none;
+  }
+
+  @keyframes revealImage {
+    from {
+      opacity: 0;
+      filter: blur(18px);
+      transform: translateY(24px) scale(0.86) rotateX(14deg) rotateY(-12deg);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+      transform: translateY(0) scale(1) rotateX(0deg) rotateY(0deg);
+    }
+  }
+
+  @keyframes float3D {
+    0%   { transform: translateY(0px) rotateX(0deg) rotateY(-6deg) rotateZ(-1.2deg) scale(1); }
+    25%  { transform: translateY(-10px) rotateX(4deg) rotateY(4deg) rotateZ(0.5deg) scale(1.012); }
+    50%  { transform: translateY(2px) rotateX(-2deg) rotateY(7deg) rotateZ(1deg) scale(1.018); }
+    75%  { transform: translateY(-7px) rotateX(3deg) rotateY(-3deg) rotateZ(-0.8deg) scale(1.01); }
+    100% { transform: translateY(0px) rotateX(0deg) rotateY(-6deg) rotateZ(-1.2deg) scale(1); }
+  }
+
+  @keyframes shine {
+    0%   { transform: translateX(-38%) translateZ(30px); opacity: 0; }
+    18%  { opacity: 0.85; }
+    42%  { transform: translateX(30%) translateZ(30px); opacity: 0.35; }
+    100% { transform: translateX(52%) translateZ(30px); opacity: 0; }
+  }
+
+  @media (max-width: 768px) {
+    .imageWrap {
+      width: min(94vw, 760px);
+    }
+  }
+</style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <div class="imageScene">
+    <div class="imageWrap" id="imageWrap">
+      <img src="image.PNG" class="festivalImage" alt="عيد أضحى مبارك">
+    </div>
+  </div>
+
+<script>
+  const canvas = document.getElementById('canvas');
+  const ctx = canvas.getContext('2d');
+  const imageWrap = document.getElementById('imageWrap');
+
+  function resizeCanvas() {
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+  }
+
+  resizeCanvas();
+  window.addEventListener('resize', resizeCanvas);
+
+  const stars = [];
+  const particles = [];
+  const STAR_COUNT = 250;
+
+  function initStars() {
+    stars.length = 0;
+    for (let i = 0; i < STAR_COUNT; i++) {
+      stars.push({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        size: Math.random() * 1.7 + 0.2,
+        alpha: Math.random(),
+        speed: Math.random() * 0.022 + 0.003,
+        hue: 25 + Math.random() * 40
+      });
+    }
+  }
+
+  function createExplosion(x, y) {
+    for (let i = 0; i < 80; i++) {
+      particles.push({
+        x,
+        y,
+        size: Math.random() * 6 + 2,
+        speedX: (Math.random() - 0.5) * 6,
+        speedY: (Math.random() - 0.5) * 6,
+        color: `hsl(${Math.random() * 65 + 10}, 100%, ${52 + Math.random() * 18}%)`,
+        life: 100
+      });
+    }
+  }
+
+  setInterval(() => {
+    createExplosion(
+      Math.random() * canvas.width,
+      Math.random() * canvas.height * 0.55
+    );
+  }, 500);
+
+  function animate() {
+    ctx.fillStyle = 'rgba(0,0,0,0.18)';
+    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+    for (const star of stars) {
+      star.alpha += star.speed;
+      if (star.alpha <= 0.06 || star.alpha >= 1) {
+        star.speed *= -1;
+      }
+      star.hue += 0.05;
+
+      ctx.beginPath();
+      ctx.arc(star.x, star.y, star.size, 0, Math.PI * 2);
+      ctx.fillStyle = `hsla(${star.hue}, 100%, 70%, ${star.alpha})`;
+      ctx.shadowBlur = 12;
+      ctx.shadowColor = `hsla(${star.hue}, 100%, 72%, 0.45)`;
+      ctx.fill();
+    }
+
+    ctx.shadowBlur = 0;
+
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+      p.x += p.speedX;
+      p.y += p.speedY;
+      p.life--;
+
+      ctx.globalAlpha = Math.max(p.life / 100, 0);
+      ctx.fillStyle = p.color;
+      ctx.fillRect(p.x, p.y, p.size, p.size);
+
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+      }
+    }
+
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(animate);
+  }
+
+  initStars();
+  animate();
+
+  window.addEventListener('pointermove', (event) => {
+    const x = event.clientX / window.innerWidth - 0.5;
+    const y = event.clientY / window.innerHeight - 0.5;
+    imageWrap.style.transition = 'transform 180ms ease-out';
+    imageWrap.style.transform = `translateY(${y * -10}px) rotateX(${y * -10}deg) rotateY(${x * 16}deg) rotateZ(${x * 2}deg) scale(1.015)`;
+  });
+
+  window.addEventListener('pointerleave', () => {
+    imageWrap.style.transition = 'transform 700ms ease';
+    imageWrap.style.transform = '';
+  });
+</script>
+</body>
+</html>
